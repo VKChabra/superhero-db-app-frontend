@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import styles from "./SuperheroForm.module.css";
+import SuperheroImages from "./ImagePreview";
 
 const SuperheroForm = () => {
   const [superheroData, setSuperheroData] = useState({
@@ -13,7 +14,6 @@ const SuperheroForm = () => {
   });
 
   const handleImageUpload = image => {
-    console.log(image);
     if (superheroData.images.length >= 5) {
       console.error("Maximum allowed images per superhero is 5.");
       return;
@@ -138,6 +138,7 @@ const SuperheroForm = () => {
             className={styles.formInput}
           />
         </label>
+        <SuperheroImages images={superheroData.images} />
         <br />
         <input
           type="file"
