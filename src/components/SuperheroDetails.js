@@ -88,6 +88,7 @@ const SuperheroDetails = () => {
     try {
       await API.delete(`/superheroes/${id}`);
       navigate("/superheroes");
+      notifications.notifySuccess("Superhero was successfully deleted");
     } catch (error) {
       console.error("Error deleting superhero: ", error);
     }
