@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import ContentEditable from "react-contenteditable";
 import API, { baseURL } from "../services/api";
 import styles from "./SuperheroDetails.module.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ImageManager from "./ImageUpdateManager";
 import notifications from "../helpers/notifications";
 import closeIcon from "../images/close-icon.png";
 
 const SuperheroDetails = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [superhero, setSuperhero] = useState(null);
   const [isEditable, setIsEditable] = useState(false);
   const [editedData, setEditedData] = useState({});
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] =
+    useState(false);
 
   useEffect(() => {
     API.get(`/superheroes/${id}`).then(response => {
@@ -75,6 +78,23 @@ const SuperheroDetails = () => {
   const handleCancelEdit = () => {
     setIsEditable(false);
     setEditedData(superhero);
+  };
+
+  const handleDeleteClick = () => {
+    setIsDeleteConfirmationVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await API.delete(`/superheroes/${id}`);
+      navigate("/superheroes");
+    } catch (error) {
+      console.error("Error deleting superhero: ", error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteConfirmationVisible(false);
   };
 
   if (!superhero) {
@@ -208,13 +228,23 @@ const SuperheroDetails = () => {
           existingImages={editedData.images}
         />
       )}
-      {isEditable ? (
+      {isDeleteConfirmationVisible && (
+        <div className={styles.confirmationModal}>
+          <p>Are you sure you want to delete this superhero?</p>
+          <button onClick={handleConfirmDelete}>Yes, Delete</button>
+          <button onClick={handleCancelDelete}>Cancel</button>
+        </div>
+      )}
+      {isEditable && !isDeleteConfirmationVisible ? (
         <>
           <button onClick={() => handleSaveChanges()}>Save</button>
           <button onClick={handleCancelEdit}>Cancel</button>
+          <button onClick={handleDeleteClick}>Delete</button>
         </>
       ) : (
-        <button onClick={() => setIsEditable(true)}>Edit</button>
+        !isDeleteConfirmationVisible && (
+          <button onClick={() => setIsEditable(true)}>Edit</button>
+        )
       )}
     </div>
   );
