@@ -1,13 +1,64 @@
 .detailsContainer {
-  max-width: 400px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 20px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.imageContainer {
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .detailsImage {
-  width: 100%;
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.removeButton {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
   border-radius: 5px;
-  margin-bottom: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.content {
+  margin-bottom: 10px;
+}
+
+.additionalImagesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.additionalImage {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.removeButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.removeButton img {
+  width: 20px;
+  height: 20px;
 }

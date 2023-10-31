@@ -1,9 +1,12 @@
 import { useState } from "react";
 import API from "../services/api";
 import styles from "./SuperheroForm.module.css";
-import SuperheroImages from "./ImagePreview";
+import notifications from "../helpers/notifications";
+import ImageManager from "./ImageFormManager";
+import { useNavigate } from "react-router-dom";
 
 const SuperheroForm = () => {
+  const navigate = useNavigate();
   const [superheroData, setSuperheroData] = useState({
     nickname: "",
     real_name: "",
@@ -12,52 +15,57 @@ const SuperheroForm = () => {
     catch_phrase: "",
     images: [],
   });
+  const { nickname, real_name, origin_description, superpowers, catch_phrase } =
+    superheroData;
 
-  const handleImageUpload = image => {
-    if (superheroData.images.length >= 5) {
-      console.error("Maximum allowed images per superhero is 5.");
-      return;
-    }
-
-    if (!image) {
-      console.error("Please select an image to upload.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("image", image);
-
-    API.post("/superheroes/upload", formData)
-      .then(response => {
-        const newImageLink = response.data;
-        setSuperheroData({
-          ...superheroData,
-          images: [...superheroData.images, newImageLink],
-        });
-        console.log(superheroData);
-      })
-      .catch(error => {
-        console.error("Error uploading image:", error);
-      });
+  const handleImagesUpdate = images => {
+    setSuperheroData({
+      ...superheroData,
+      images: images,
+    });
   };
 
   const handleFormSubmit = e => {
     e.preventDefault();
 
-    const superpowersArray = superheroData.superpowers.split(", ");
-    let updatedSuperheroData = {
-      ...superheroData,
-      superpowers: superpowersArray,
-    };
-
-    if (updatedSuperheroData.images.length === 0) {
-      console.error("Please upload at least one image.");
+    if (
+      nickname.trim() === "" ||
+      real_name.trim() === "" ||
+      origin_description.trim() === "" ||
+      superpowers.length === 0 ||
+      catch_phrase.trim() === ""
+    ) {
+      notifications.notifyWarning("Make sure each field is not empty");
       return;
     }
 
-    API.post("/superheroes", updatedSuperheroData)
+    if (superheroData.images.length === 0) {
+      notifications.notifyWarning("Please upload at least one image.");
+      return;
+    }
+    let updatedSHData = {
+      ...superheroData,
+      superpowers: superpowers.split(",").map(power => power.trim()),
+    };
+    const formData = new FormData();
+    for (const key in updatedSHData) {
+      if (updatedSHData.hasOwnProperty(key)) {
+        if (Array.isArray(updatedSHData[key])) {
+          updatedSHData[key].forEach(item => {
+            formData.append(key, item);
+          });
+        } else {
+          formData.append(key, updatedSHData[key]);
+        }
+      }
+    }
+
+    API.post("/superheroes", formData)
       .then(response => {
-        console.log("Superhero created successfully:", response.data);
+        notifications.notifySuccess(
+          "Superhero created successfully:",
+          response.data
+        );
         setSuperheroData({
           nickname: "",
           real_name: "",
@@ -66,10 +74,11 @@ const SuperheroForm = () => {
           catch_phrase: "",
           images: [],
         });
-        updatedSuperheroData = {};
+        navigate(`/superhero/${response.data._id}`);
       })
       .catch(error => {
-        console.error("Error creating superhero:", error);
+        notifications.notifyError("Error creating superhero");
+        console.error(error);
       });
   };
 
@@ -138,12 +147,7 @@ const SuperheroForm = () => {
             className={styles.formInput}
           />
         </label>
-        <SuperheroImages images={superheroData.images} />
-        <br />
-        <input
-          type="file"
-          onChange={e => handleImageUpload(e.target.files[0])}
-        />
+        <ImageManager onImagesUpdate={handleImagesUpdate} />
         <br />
         <button type="submit" className={styles.formButton}>
           Create
